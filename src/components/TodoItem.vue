@@ -18,7 +18,12 @@
       <span v-else>{{ modelValue.text }}</span>
     </div>
 
-    <button class="delete" type="button" @click="$emit('delete')">✕</button>
+    <div class="actions">
+      <button type="button" class="edit" @click="toggleEditing" :aria-pressed="editing">
+        {{ editing ? 'Save' : 'Edit' }}
+      </button>
+      <button class="delete" type="button" @click="$emit('delete')" aria-label="Delete task">✕</button>
+    </div>
   </li>
 </template>
 
@@ -49,6 +54,15 @@ const startEditing = () => {
   editing.value = true
   draftText.value = props.modelValue.text
   focusInput()
+}
+
+const toggleEditing = () => {
+  if (editing.value) {
+    save()
+    return
+  }
+
+  startEditing()
 }
 
 const save = () => {
@@ -146,17 +160,32 @@ const onToggle = () => {
   outline: none;
 }
 
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.edit,
 .delete {
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 18px;
-  color: #cbd5e1;
-  transition: color 0.15s ease, transform 0.1s ease;
+  font-size: 14px;
+  color: #475569;
+  transition: color 0.15s ease, transform 0.1s ease, background 0.15s ease;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.edit:hover {
+  color: #4f46e5;
+  background: #eef2ff;
 }
 
 .delete:hover {
   color: #ef4444;
-  transform: scale(1.1);
+  transform: scale(1.05);
+  background: #fef2f2;
 }
 </style>
