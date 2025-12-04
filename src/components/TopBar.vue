@@ -9,6 +9,7 @@
           type="button"
           class="nav-link"
           :class="{ active: filter === option.value }"
+          :aria-pressed="filter === option.value"
           @click="$emit('update:filter', option.value)"
         >
           {{ option.label }}

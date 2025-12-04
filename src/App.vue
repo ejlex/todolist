@@ -31,12 +31,21 @@
     </main>
 
     <div v-if="showForm" class="modal-backdrop" @click.self="toggleForm">
-      <div class="modal">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-task-title"
+        aria-describedby="add-task-desc"
+      >
         <header class="modal-head">
-          <h3>Add task</h3>
-          <button type="button" class="close-btn" @click="toggleForm">×</button>
+          <h3 id="add-task-title">Add task</h3>
+          <button type="button" class="close-btn" aria-label="Close add task modal" @click="toggleForm">×</button>
         </header>
-        <AddTaskForm ref="taskForm" @submit="addTask" />
+        <AddTaskForm ref="taskForm" aria-describedby="add-task-desc" @submit="addTask" />
+        <p id="add-task-desc" class="visually-hidden">
+          Provide a task title, optional image URL, and description, then submit to create the task.
+        </p>
       </div>
     </div>
   </div>
@@ -121,6 +130,17 @@ const filteredTasks = computed(() => {
   margin: 0;
   color: #7a7a7a;
   font-size: 13px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 .icon {

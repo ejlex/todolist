@@ -2,8 +2,13 @@
   <article class="task-card" :class="statusClass">
 
     <div class="card-media">
-      <img v-if="previewImage" :src="previewImage" alt="Task visual" loading="lazy" />
-      <div v-else class="placeholder">320x200</div>
+      <img
+        v-if="previewImage"
+        :src="previewImage"
+        :alt="modelValue.title || 'Task visual'"
+        loading="lazy"
+      />
+      <div v-else class="placeholder" aria-label="Placeholder image 320 by 200">320x200</div>
     </div>
 
     <div class="card-body">
@@ -29,7 +34,14 @@
       <p class="created">Created {{ formattedDate }}</p>
 
       <div class="card-actions">
-        <button class="btn start" type="button" @click="cycleStatus">{{ statusLabel }}</button>
+        <button
+          class="btn start"
+          type="button"
+          :aria-label="statusAriaLabel"
+          @click="cycleStatus"
+        >
+          {{ statusLabel }}
+        </button>
         <button class="btn remove" type="button" @click="$emit('delete')">Remove</button>
       </div>
     </div>
@@ -61,6 +73,14 @@ const formattedDate = computed(() => new Date(props.modelValue.createdAt).toLoca
 const previewImage = computed(() => draft.image || props.modelValue.image || '')
 const statusLabel = computed(() => statuses.find((status) => status.value === props.modelValue.status)?.label || 'Todo')
 const statusClass = computed(() => `status-${props.modelValue.status}`)
+const statusAriaLabel = computed(() => {
+  const currentIndex = statuses.findIndex((s) => s.value === props.modelValue.status)
+  const next = statuses[currentIndex + 1]
+  if (props.modelValue.status === 'completed' || !next) {
+    return `Status: ${statusLabel.value}. Completed tasks cannot advance.`
+  }
+  return `Status: ${statusLabel.value}. Activate to mark as ${next.label}.`
+})
 
 watch(
   () => props.modelValue,
