@@ -62,8 +62,7 @@ const editing = ref(false)
 const draft = reactive({ ...props.modelValue })
 
 const statuses = [
-  { value: 'todo', label: 'Todo' },
-  { value: 'in-progress', label: 'In progress' },
+  { value: 'pending', label: 'Pending' },
   { value: 'completed', label: 'Completed' },
 ]
 
@@ -71,8 +70,7 @@ const formattedDate = computed(() => new Date(props.modelValue.createdAt).toLoca
 const previewImage = computed(() => draft.image || props.modelValue.image || '')
 const statusLabel = computed(() => statuses.find((status) => status.value === props.modelValue.status)?.label || 'Todo')
 const nextStatusLabel = computed(() => {
-  if (props.modelValue.status === 'todo') return 'Start progress'
-  if (props.modelValue.status === 'in-progress') return 'Mark complete'
+  if (props.modelValue.status === 'pending') return 'Mark complete'
   return 'Reopen'
 })
 const statusClass = computed(() => `status-${props.modelValue.status}`)
@@ -85,12 +83,7 @@ watch(
 )
 
 const cycleStatus = () => {
-  const next =
-    props.modelValue.status === 'todo'
-      ? 'in-progress'
-      : props.modelValue.status === 'in-progress'
-        ? 'completed'
-        : 'in-progress'
+  const next = props.modelValue.status === 'pending' ? 'completed' : 'pending'
   emit('update:modelValue', { ...props.modelValue, status: next })
 }
 
@@ -242,16 +235,12 @@ const toggleEdit = () => {
   border: 1px solid #fecdd3;
 }
 
-.status-in-progress {
+.status-pending {
   border-color: #c7d2fe;
 }
 
 .status-completed {
   border-color: #bbf7d0;
   background: #f0fdf4;
-}
-
-.status-todo {
-  border-color: #e2e8f0;
 }
 </style>

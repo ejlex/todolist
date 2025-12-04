@@ -77,11 +77,9 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, reactive, ref } from "vue";
 import TaskCard from "./components/TaskCard.vue";
-
-const filter = ref("all");
-const tasks = ref(loadTasks());
+import { useTasksStore } from "./stores/tasks";
 
 const draft = reactive({
   title: "",
@@ -89,50 +87,29 @@ const draft = reactive({
   image: "",
 });
 
+const filter = ref("all");
+const tasksStore = useTasksStore();
+
 const filters = computed(() => [
-  { label: "Todo", value: "all", count: tasks.value.length },
-  {
-    label: "In progress",
-    value: "in-progress",
-    count: tasks.value.filter((task) => task.status === "in-progress").length,
-  },
-  { label: "Completed", value: "completed", count: tasks.value.filter((task) => task.status === "completed").length },
+  { label: "Todo", value: "all", count: tasksStore.tasks.length },
+  { label: "Pending", value: "pending", count: tasksStore.tasks.filter((task) => task.status === "pending").length },
+  { label: "Completed", value: "completed", count: tasksStore.tasks.filter((task) => task.status === "completed").length },
 ]);
 
 const counts = computed(() => ({
-  todo: tasks.value.length,
-  completed: tasks.value.filter((task) => task.status === "completed").length,
+  todo: tasksStore.tasks.length,
+  completed: tasksStore.tasks.filter((task) => task.status === "completed").length,
 }));
-
-watch(
-  tasks,
-  () => {
-    localStorage.setItem("tasks", JSON.stringify(tasks.value));
-  },
-  { deep: true }
-);
-
-function loadTasks() {
-  const saved = localStorage.getItem("tasks");
-  if (!saved) return [];
-
-  try {
-    return JSON.parse(saved);
-  } catch (error) {
-    console.warn("Could not parse saved tasks", error);
-    return [];
-  }
-}
 
 const addTask = () => {
   if (!draft.title.trim()) return;
 
-  tasks.value.unshift({
+  tasksStore.addTask({
     id: crypto.randomUUID(),
     title: draft.title.trim(),
     description: draft.description,
     image: draft.image,
-    status: "todo",
+    status: "pending",
     createdAt: new Date().toISOString(),
   });
 
@@ -142,30 +119,20 @@ const addTask = () => {
 };
 
 const updateTask = (updated) => {
-  const index = tasks.value.findIndex((task) => task.id === updated.id);
-  if (index !== -1) {
-    tasks.value[index] = updated;
-  }
+  tasksStore.updateTask(updated);
 };
 
 const deleteTask = (id) => {
-  const index = tasks.value.findIndex((task) => task.id === id);
-  if (index !== -1) {
-    tasks.value.splice(index, 1);
-  }
+  tasksStore.deleteTask(id);
 };
 
 const duplicateTask = (task) => {
-  tasks.value.unshift({
-    ...task,
-    id: crypto.randomUUID(),
-    createdAt: new Date().toISOString(),
-  });
+  tasksStore.duplicateTask(task);
 };
 
 const filteredTasks = computed(() => {
-  if (filter.value === "in-progress") return tasks.value.filter((task) => task.status === "in-progress");
-  if (filter.value === "completed") return tasks.value.filter((task) => task.status === "completed");
-  return tasks.value;
+  if (filter.value === "pending") return tasksStore.tasks.filter((task) => task.status === "pending");
+  if (filter.value === "completed") return tasksStore.tasks.filter((task) => task.status === "completed");
+  return tasksStore.tasks;
 });
 </script>
