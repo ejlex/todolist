@@ -9,7 +9,22 @@
           <p class="status-pill">{{ statusLabel }}</p>
           <p class="created">Created {{ formattedDate }}</p>
         </div>
-        <button class="chip" type="button" @click="cycleStatus">{{ nextStatusLabel }}</button>
+        <button
+          class="status-toggle icon-only"
+          type="button"
+          :aria-label="props.modelValue.status === 'completed' ? 'Mark pending' : 'Mark complete'"
+          :title="props.modelValue.status === 'completed' ? 'Mark pending' : 'Mark complete'"
+          @click="cycleStatus"
+        >
+          <span class="status-indicator" :class="{ done: props.modelValue.status === 'completed' }">
+            <svg v-if="props.modelValue.status === 'completed'" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M20 6.5 9.5 17 4 11.5l1.5-1.5 4 4L18.5 5z"
+                fill="currentColor"
+              />
+            </svg>
+          </span>
+        </button>
       </header>
 
       <div v-if="editing" class="card-form">
@@ -25,12 +40,6 @@
           <span>Image URL</span>
           <input v-model.trim="draft.image" type="url" />
         </label>
-        <label>
-          <span>Status</span>
-          <select v-model="draft.status">
-            <option v-for="option in statuses" :key="option.value" :value="option.value">{{ option.label }}</option>
-          </select>
-        </label>
       </div>
       <div v-else class="card-content">
         <h3>{{ modelValue.title }}</h3>
@@ -38,7 +47,6 @@
       </div>
 
       <div class="card-actions">
-        <button class="ghost" type="button" @click="$emit('duplicate')">Add</button>
         <button class="primary" type="button" @click="toggleEdit">{{ editing ? 'Save' : 'Edit' }}</button>
         <button class="danger" type="button" @click="$emit('delete')">Remove</button>
       </div>
@@ -69,10 +77,6 @@ const statuses = [
 const formattedDate = computed(() => new Date(props.modelValue.createdAt).toLocaleString())
 const previewImage = computed(() => draft.image || props.modelValue.image || '')
 const statusLabel = computed(() => statuses.find((status) => status.value === props.modelValue.status)?.label || 'Todo')
-const nextStatusLabel = computed(() => {
-  if (props.modelValue.status === 'pending') return 'Mark complete'
-  return 'Reopen'
-})
 const statusClass = computed(() => `status-${props.modelValue.status}`)
 
 watch(
@@ -126,10 +130,12 @@ const toggleEdit = () => {
 }
 
 .card-body {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
+  justify-content: flex-end;
 }
 
 .card-head {
@@ -151,14 +157,47 @@ const toggleEdit = () => {
   font-size: 13px;
 }
 
-.chip {
-  border: 1px solid #cbd5e1;
-  padding: 8px 12px;
-  border-radius: 999px;
+.status-toggle {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  padding: 8px;
+  border-radius: 12px;
   background: #f8fafc;
   cursor: pointer;
-  font-weight: 700;
-  color: #475569;
+  color: #0f172a;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
+}
+
+.status-toggle.icon-only {
+  width: 44px;
+  height: 44px;
+  justify-content: center;
+}
+
+.status-toggle:hover {
+  transform: translateY(-1px);
+  border-color: #94a3b8;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.status-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e2e8f0;
+  color: #10b981;
+}
+
+.status-indicator.done {
+  background: #dcfce7;
+}
+
+.status-indicator svg {
+  width: 16px;
+  height: 16px;
 }
 
 .card-content h3 {
@@ -171,6 +210,7 @@ const toggleEdit = () => {
   margin: 0;
   color: #475569;
   line-height: 1.5;
+  min-height: 50px;
 }
 
 .card-form {
