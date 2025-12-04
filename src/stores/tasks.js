@@ -45,7 +45,6 @@ export const useTasksStore = defineStore("tasks", () => {
   );
 
   const addTask = (task) => {
-    // Preserve explicit status passed in (e.g., "start"), while still normalizing any unknowns.
     const status = normalizeStatus(task.status);
     tasks.value.unshift({ ...task, status });
   };
