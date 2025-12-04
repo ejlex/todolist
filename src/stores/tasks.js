@@ -1,44 +1,18 @@
 import { ref, watch } from "vue";
 import { defineStore } from "pinia";
+import defaultTasksData from "./defaultTasks.json";
 
 const STORAGE_KEY = "tasks";
 
 const normalizeStatus = (status) => (status === "completed" ? "completed" : "pending");
 
-const defaultTasks = () => [
-  {
+const defaultTasks = () =>
+  defaultTasksData.map((task) => ({
+    ...task,
     id: crypto.randomUUID(),
-    title: "Plan the week",
-    description: "Outline the top priorities and milestones for the next 7 days.",
-    image: "",
-    status: "pending",
     createdAt: new Date().toISOString(),
-  },
-  {
-    id: crypto.randomUUID(),
-    title: "Design task board",
-    description: "Sketch the columns, colors, and labels for the visual board.",
-    image: "",
-    status: "pending",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: crypto.randomUUID(),
-    title: "Write documentation",
-    description: "Draft quick start steps so others can use the workflow easily.",
-    image: "",
-    status: "pending",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: crypto.randomUUID(),
-    title: "Ship first version",
-    description: "Bundle tasks, verify flows, and prepare for the initial release.",
-    image: "",
-    status: "completed",
-    createdAt: new Date().toISOString(),
-  },
-];
+    status: normalizeStatus(task.status),
+  }));
 
 const loadTasks = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
