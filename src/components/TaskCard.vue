@@ -1,32 +1,12 @@
 <template>
   <article class="task-card" :class="statusClass">
-    <div class="card-media" v-if="previewImage">
-      <img :src="previewImage" alt="Task visual" loading="lazy" />
-    </div>
-    <div class="card-body">
-      <header class="card-head">
-        <div>
-          <p class="status-pill">{{ statusLabel }}</p>
-          <p class="created">Created {{ formattedDate }}</p>
-        </div>
-        <button
-          class="status-toggle icon-only"
-          type="button"
-          :aria-label="props.modelValue.status === 'completed' ? 'Mark pending' : 'Mark complete'"
-          :title="props.modelValue.status === 'completed' ? 'Mark pending' : 'Mark complete'"
-          @click="cycleStatus"
-        >
-          <span class="status-indicator" :class="{ done: props.modelValue.status === 'completed' }">
-            <svg v-if="props.modelValue.status === 'completed'" viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M20 6.5 9.5 17 4 11.5l1.5-1.5 4 4L18.5 5z"
-                fill="currentColor"
-              />
-            </svg>
-          </span>
-        </button>
-      </header>
 
+    <div class="card-media">
+      <img v-if="previewImage" :src="previewImage" alt="Task visual" loading="lazy" />
+      <div v-else class="placeholder">320x200</div>
+    </div>
+
+    <div class="card-body">
       <div v-if="editing" class="card-form">
         <label>
           <span>Title</span>
@@ -46,9 +26,11 @@
         <p class="description">{{ modelValue.description || 'No description provided yet.' }}</p>
       </div>
 
+      <p class="created">Created {{ formattedDate }}</p>
+
       <div class="card-actions">
-        <button class="primary" type="button" @click="toggleEdit">{{ editing ? 'Save' : 'Edit' }}</button>
-        <button class="danger" type="button" @click="$emit('delete')">Remove</button>
+        <button class="btn start" type="button" @click="cycleStatus">{{ statusLabel }}</button>
+        <button class="btn remove" type="button" @click="$emit('delete')">Remove</button>
       </div>
     </div>
   </article>
@@ -70,7 +52,8 @@ const editing = ref(false)
 const draft = reactive({ ...props.modelValue })
 
 const statuses = [
-  { value: 'pending', label: 'In-progress' },
+  { value: 'start', label: 'Start' },
+  { value: 'pending', label: 'In progress' },
   { value: 'completed', label: 'Completed' },
 ]
 
@@ -87,8 +70,11 @@ watch(
 )
 
 const cycleStatus = () => {
-  const next = props.modelValue.status === 'pending' ? 'completed' : 'pending'
-  emit('update:modelValue', { ...props.modelValue, status: next })
+  if (props.modelValue.status === 'completed') return
+
+  const currentIndex = statuses.findIndex((s) => s.value === props.modelValue.status)
+  const next = statuses[currentIndex + 1] || statuses[0]
+  emit('update:modelValue', { ...props.modelValue, status: next.value })
 }
 
 const toggleEdit = () => {
@@ -105,187 +91,136 @@ const toggleEdit = () => {
 <style scoped>
 .task-card {
   width: 100%;
-  max-width: 320px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #ffffff;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  border: 1px solid #dadada;
+  border-radius: 4px;
+  background: #fff;
   min-height: 100%;
+  height: 100%;
+  padding: 5px;
+}
+
+.task-card.status-completed {
+  background: #f7f7f7;
+}
+
+.created {
+  color: #7a7a7a;
+  margin: 0;
+  font-size: 13px;
 }
 
 .card-media {
   width: 100%;
   max-width: 320px;
-  aspect-ratio: 320 / 200;
-  background: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
+  height: 200px;
+  border-top: 1px solid #ebebeb;
+  border-bottom: 1px solid #ebebeb;
+  display: grid;
+  place-items: center;
+  background: #efefef;
 }
 
 .card-media img {
   width: 100%;
   height: 100%;
+  max-width: 320px;
+  max-height: 200px;
   object-fit: cover;
 }
 
+.placeholder {
+  color: #9a9a9a;
+  font-weight: 700;
+}
+
 .card-body {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
-  justify-content: flex-end;
-}
-
-.card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.status-pill {
-  margin: 0;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.created {
-  margin: 4px 0 0;
-  color: #64748b;
-  font-size: 13px;
-}
-
-.status-toggle {
-  display: inline-flex;
-  align-items: center;
-  border: none;
-  padding: 8px;
-  border-radius: 12px;
-  background: #f8fafc;
-  cursor: pointer;
-  color: #0f172a;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
-}
-
-.status-toggle.icon-only {
-  width: 44px;
-  height: 44px;
-  justify-content: center;
-}
-
-.status-toggle:hover {
-  transform: translateY(-1px);
-  border-color: #94a3b8;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
-}
-
-.status-indicator {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: #e2e8f0;
-  color: #10b981;
-}
-
-.status-indicator.done {
-  background: #dcfce7;
-}
-
-.status-indicator svg {
-  width: 16px;
-  height: 16px;
+  padding: 12px;
+  flex: 1;
 }
 
 .card-content h3 {
-  margin: 0 0 6px;
-  font-size: 20px;
-  color: #0f172a;
+  margin: 0 0 4px;
+  font-size: 16px;
 }
 
 .description {
   margin: 0;
-  color: #475569;
-  line-height: 1.5;
-  min-height: 50px;
+  color: #4c4c4c;
+  line-height: 1.4;
+  min-height: 48px;
 }
 
 .card-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .card-form label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-weight: 600;
-  color: #475569;
+  gap: 4px;
+  font-weight: 700;
+  color: #4c4c4c;
+  font-size: 13px;
 }
 
 .card-form input,
-.card-form textarea,
-.card-form select {
+.card-form textarea {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 12px;
-  font-size: 15px;
+  padding: 8px 10px;
+  border: 1px solid #c9c9c9;
+  border-radius: 3px;
+  font-size: 14px;
 }
 
 .card-actions {
   display: flex;
-  justify-content: space-between;
   gap: 8px;
+  margin-top: auto;
 }
 
-.card-actions button {
+.btn {
   flex: 1;
-  border: none;
-  padding: 10px 12px;
-  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 8px;
+  border-radius: 3px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.08s ease, box-shadow 0.15s ease;
 }
 
-.card-actions button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+.btn.start {
+  border-color: #2f8ed6;
+  background: linear-gradient(#53a9e4, #2f8ed6);
+  color: #fff;
 }
 
-.ghost {
-  background: #f8fafc;
-  color: #0f172a;
-  border: 1px solid #cbd5e1;
+.status-start .btn.start {
+  border-color: #2f8ed6;
+  background: linear-gradient(#53a9e4, #2f8ed6);
+  color: #fff;
 }
 
-.primary {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: #ffffff;
+.status-pending .btn.start {
+  border-color: #1f7a27;
+  background: linear-gradient(#2fbf3a, #1f7a27);
+  color: #fff;
 }
 
-.danger {
-  background: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fecdd3;
+.status-completed .btn.start {
+  border-color: #b3b3b3;
+  background: linear-gradient(#f3f3f3, #cfcfcf);
+  color: #4c4c4c;
 }
 
-.status-pending {
-  border-color: #c7d2fe;
-}
-
-.status-completed {
-  border-color: #bbf7d0;
-  background: #f0fdf4;
+.btn.remove {
+  border-color: #cf4436;
+  background: linear-gradient(#e96b60, #cf4436);
+  color: #fff;
 }
 </style>

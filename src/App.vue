@@ -1,99 +1,73 @@
 <template>
-  <main class="app-shell">
-    <header class="heading">
-      <div>
-        <h1>My Todo List</h1>
-        <p>Capture tasks, track status, and manage them visually.</p>
-        <p class="badge stack">Vue 3 • Vite • Pinia</p>
-        <div class="author">by Lee Jun Xian</div>
-      </div>
-      <div class="badge">{{ counts.todo }} tasks</div>
-    </header>
+  <div class="page">
+    <TopBar v-model:filter="filter" :filters="filters" candidate-name="Lee Jun Xian" />
 
-    <form class="form" @submit.prevent="addTask">
-      <div class="form-grid">
-        <label>
-          <span>Title</span>
-          <input
-            v-model.trim="draft.title"
-            type="text"
-            name="title"
-            autocomplete="off"
-            placeholder="Create a task title"
-            aria-label="Task title"
-            required
-          />
-        </label>
-        <label>
-          <span>Image URL</span>
-          <input
-            v-model.trim="draft.image"
-            type="url"
-            name="image"
-            autocomplete="off"
-            placeholder="https://images.example.com/task.jpg"
-            aria-label="Task image URL"
-          />
-        </label>
-      </div>
-      <label class="full-row">
-        <span>Description</span>
-        <textarea
-          v-model.trim="draft.description"
-          name="description"
-          rows="3"
-          placeholder="Add helpful context for this task"
-          aria-label="Task description"
-        />
-      </label>
-      <button type="submit">Add task</button>
-    </form>
+    <main class="layout">
+      <section class="tasks">
+        <header class="tasks-head">
+          <div>
+            <div class="title-row">
+              <h1>Todo</h1>
+              <button type="button" class="create-btn" @click="toggleForm">+ Create task</button>
+            </div>
+            <p class="muted">{{ counts.todo }} total tasks</p>
+          </div>
+        </header>
 
-    <div class="filters" role="group" aria-label="Filter tasks">
-      <button
-        v-for="option in filters"
-        :key="option.value"
-        type="button"
-        class="filter-btn"
-        :class="{ active: filter === option.value }"
-        @click="filter = option.value"
-      >
-        {{ option.label }} ({{ option.count }})
-      </button>
+        <section v-if="filteredTasks.length" class="task-grid" aria-live="polite">
+          <TaskCard
+            v-for="task in filteredTasks"
+            :key="task.id"
+            :model-value="task"
+            @update:modelValue="updateTask"
+            @delete="deleteTask(task.id)"
+            @duplicate="duplicateTask(task)"
+          />
+        </section>
+        <p v-else class="empty">No tasks yet. Add something to get started!</p>
+      </section>
+
+      <CompanyNews />
+    </main>
+
+    <div v-if="showForm" class="modal-backdrop" @click.self="toggleForm">
+      <div class="modal">
+        <header class="modal-head">
+          <h3>Add task</h3>
+          <button type="button" class="close-btn" @click="toggleForm">×</button>
+        </header>
+        <AddTaskForm ref="taskForm" @submit="addTask" />
+      </div>
     </div>
-
-    <section v-if="filteredTasks.length" class="task-grid" aria-live="polite">
-      <TaskCard
-        v-for="task in filteredTasks"
-        :key="task.id"
-        :model-value="task"
-        @update:modelValue="updateTask"
-        @delete="deleteTask(task.id)"
-        @duplicate="duplicateTask(task)"
-      />
-    </section>
-    <p v-else class="empty">No tasks yet. Add something to get started!</p>
-  </main>
+  </div>
 </template>
 
 <script setup>
-import { computed, reactive, ref } from "vue";
+import { computed, ref } from "vue";
 import TaskCard from "./components/TaskCard.vue";
+import TopBar from "./components/TopBar.vue";
+import AddTaskForm from "./components/AddTaskForm.vue";
+import CompanyNews from "./components/CompanyNews.vue";
 import { useTasksStore } from "./stores/tasks";
 
-const draft = reactive({
-  title: "",
-  description: "",
-  image: "",
-});
+const showForm = ref(false);
+const taskForm = ref(null);
 
 const filter = ref("all");
 const tasksStore = useTasksStore();
 
 const filters = computed(() => [
   { label: "Todo", value: "all", count: tasksStore.tasks.length },
-  { label: "In-progress", value: "pending", count: tasksStore.tasks.filter((task) => task.status === "pending").length },
-  { label: "Completed", value: "completed", count: tasksStore.tasks.filter((task) => task.status === "completed").length },
+  {
+    label: "In progress",
+    value: "pending",
+    count: tasksStore.tasks.filter((task) => task.status === "pending").length,
+  },
+  {
+    label: "Completed",
+    value: "completed",
+    count: tasksStore.tasks.filter((task) => task.status === "completed").length,
+  },
 ]);
 
 const counts = computed(() => ({
@@ -101,21 +75,26 @@ const counts = computed(() => ({
   completed: tasksStore.tasks.filter((task) => task.status === "completed").length,
 }));
 
-const addTask = () => {
-  if (!draft.title.trim()) return;
-
+const addTask = (payload) => {
+  if (!payload.title.trim()) return;
   tasksStore.addTask({
     id: crypto.randomUUID(),
-    title: draft.title.trim(),
-    description: draft.description,
-    image: draft.image,
-    status: "pending",
+    title: payload.title.trim(),
+    description: payload.description,
+    image: payload.image,
+    status: "start",
     createdAt: new Date().toISOString(),
   });
+  showForm.value = false;
+};
 
-  draft.title = "";
-  draft.description = "";
-  draft.image = "";
+const toggleForm = () => {
+  showForm.value = !showForm.value;
+  if (showForm.value) {
+    requestAnimationFrame(() => {
+      taskForm.value?.focusTitle();
+    });
+  }
 };
 
 const updateTask = (updated) => {
@@ -136,3 +115,15 @@ const filteredTasks = computed(() => {
   return tasksStore.tasks;
 });
 </script>
+
+<style scoped>
+.muted {
+  margin: 0;
+  color: #7a7a7a;
+  font-size: 13px;
+}
+
+.icon {
+  font-size: 12px;
+}
+</style>

@@ -4,7 +4,11 @@ import defaultTasksData from "./defaultTasks.json";
 
 const STORAGE_KEY = "tasks";
 
-const normalizeStatus = (status) => (status === "completed" ? "completed" : "pending");
+const normalizeStatus = (status) => {
+  if (status === "completed") return "completed";
+  if (status === "pending") return "pending";
+  return "start";
+};
 
 const defaultTasks = () =>
   defaultTasksData.map((task) => ({
@@ -41,7 +45,9 @@ export const useTasksStore = defineStore("tasks", () => {
   );
 
   const addTask = (task) => {
-    tasks.value.unshift({ ...task, status: normalizeStatus(task.status) });
+    // Preserve explicit status passed in (e.g., "start"), while still normalizing any unknowns.
+    const status = normalizeStatus(task.status);
+    tasks.value.unshift({ ...task, status });
   };
 
   const updateTask = (updated) => {
