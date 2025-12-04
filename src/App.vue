@@ -2,10 +2,10 @@
   <main class="app-shell">
     <header class="heading">
       <div>
+        <h1>My Todo List</h1>
+        <p>Capture tasks, track status, and manage them visually.</p>
         <p class="badge stack">Vue 3 • Vite • Pinia</p>
         <div class="author">Lee Jun Xian</div>
-        <h1>Task board</h1>
-        <p>Capture tasks, track status, and manage them visually.</p>
       </div>
       <div class="badge">{{ counts.todo }} tasks</div>
     </header>
