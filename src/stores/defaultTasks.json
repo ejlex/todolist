@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Plan the week",
+    "description": "Outline the top priorities and milestones for the next 7 days.",
+    "image": "https://img.freepik.com/free-photo/closeup-shot-beautiful-butterfly-with-interesting-textures-orange-petaled-flower_181624-7640.jpg?semt=ais_hybrid&w=740&q=80",
+    "status": "pending"
+  },
+  {
+    "title": "Design task board",
+    "description": "Sketch the columns, colors, and labels for the visual board.",
+    "image": "",
+    "status": "start"
+  },
+  {
+    "title": "Write documentation",
+    "description": "Draft quick start steps so others can use the workflow easily.",
+    "image": "",
+    "status": "pending"
+  },
+  {
+    "title": "Ship first version",
+    "description": "Bundle tasks, verify flows, and prepare for the initial release.",
+    "image": "https://www.gardendesign.com/pictures/images/263x300Exact_62x0/site_3/helianthus-yellow-flower-pixabay_11863.jpg",
+    "status": "completed"
+  }
+]
