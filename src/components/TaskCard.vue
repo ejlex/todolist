@@ -70,7 +70,7 @@ const editing = ref(false)
 const draft = reactive({ ...props.modelValue })
 
 const statuses = [
-  { value: 'pending', label: 'Pending' },
+  { value: 'pending', label: 'In-progress' },
   { value: 'completed', label: 'Completed' },
 ]
 
@@ -104,6 +104,9 @@ const toggleEdit = () => {
 
 <style scoped>
 .task-card {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   border: 1px solid #e2e8f0;
@@ -116,11 +119,13 @@ const toggleEdit = () => {
 
 .card-media {
   width: 100%;
-  height: 160px;
+  max-width: 320px;
+  aspect-ratio: 320 / 200;
   background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 auto;
 }
 
 .card-media img {

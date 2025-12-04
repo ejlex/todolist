@@ -5,7 +5,7 @@
         <h1>My Todo List</h1>
         <p>Capture tasks, track status, and manage them visually.</p>
         <p class="badge stack">Vue 3 • Vite • Pinia</p>
-        <div class="author">Lee Jun Xian</div>
+        <div class="author">by Lee Jun Xian</div>
       </div>
       <div class="badge">{{ counts.todo }} tasks</div>
     </header>
@@ -92,7 +92,7 @@ const tasksStore = useTasksStore();
 
 const filters = computed(() => [
   { label: "Todo", value: "all", count: tasksStore.tasks.length },
-  { label: "Pending", value: "pending", count: tasksStore.tasks.filter((task) => task.status === "pending").length },
+  { label: "In-progress", value: "pending", count: tasksStore.tasks.filter((task) => task.status === "pending").length },
   { label: "Completed", value: "completed", count: tasksStore.tasks.filter((task) => task.status === "completed").length },
 ]);
 
