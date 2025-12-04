@@ -1,66 +1,116 @@
 <template>
-  <main class="app-shell">
-    <header class="heading">
+  <main class="page">
+    <header class="hero">
       <div>
-        <p class="badge">Vue 3 • Vite</p>
-        <h1>Todo list</h1>
-        <p>Track tasks, mark them done, and stay organized.</p>
+        <p class="pill">Vue 3 • Vite</p>
+        <h1>Checklist</h1>
+        <p class="lede">Build, track, and finish your daily tasks with a clean workspace.</p>
       </div>
-      <div class="badge">{{ remaining }} left</div>
+      <div class="accent-card">
+        <p class="label">Tasks left</p>
+        <p class="big-number">{{ remaining }}</p>
+        <p class="muted">{{ total }} total</p>
+      </div>
     </header>
 
-    <form class="form" @submit.prevent="addTodo">
-      <input
-        v-model.trim="draft"
-        type="text"
-        name="todo"
-        autocomplete="off"
-        placeholder="Add a new task..."
-        aria-label="New task"
-      />
-      <button type="submit">Add</button>
-    </form>
+    <section class="stats">
+      <article class="stat-card">
+        <div class="stat-meta">
+          <p class="label">Overall progress</p>
+          <p class="muted">Keep the momentum going</p>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">
+            <strong>{{ progress }}%</strong>
+            <span>complete</span>
+          </div>
+          <div class="progress" role="presentation">
+            <div class="progress-bar" :style="{ width: progress + '%' }"></div>
+          </div>
+        </div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-meta">
+          <p class="label">Active tasks</p>
+          <p class="muted">Prioritize what matters today</p>
+        </div>
+        <div class="stat-body">
+          <div class="pill secondary">{{ remaining }} to go</div>
+          <div class="pill secondary">{{ completedCount }} done</div>
+        </div>
+      </article>
+    </section>
 
-    <div class="filters" role="group" aria-label="Filter tasks">
-      <button
-        v-for="option in filters"
-        :key="option.value"
-        type="button"
-        class="filter-btn"
-        :class="{ active: filter === option.value }"
-        @click="filter = option.value"
-      >
-        {{ option.label }}
-      </button>
-    </div>
+    <section class="layout">
+      <article class="card">
+        <header class="card-header">
+          <div>
+            <p class="label">Upcoming tasks</p>
+            <h2>Get things done</h2>
+          </div>
+          <form class="inline-form" @submit.prevent="addTodo">
+            <input
+              v-model.trim="draft"
+              type="text"
+              name="todo"
+              autocomplete="off"
+              placeholder="Add a new task..."
+              aria-label="New task"
+            />
+            <button type="submit">Add</button>
+          </form>
+        </header>
 
-    <ul v-if="filteredTodos.length" class="todos" aria-live="polite">
-      <TodoItem
-        v-for="todo in filteredTodos"
-        :key="todo.id"
-        :modelValue="todo"
-        @update:modelValue="updateTodo"
-        @delete="deleteTodo(todo.id)"
-      />
-    </ul>
-    <p v-else class="empty">No tasks yet. Add something to get started!</p>
+        <ul v-if="activeTodos.length" class="todo-list" aria-live="polite">
+          <TodoItem
+            v-for="todo in activeTodos"
+            :key="todo.id"
+            :modelValue="todo"
+            @update:modelValue="updateTodo"
+            @delete="deleteTodo(todo.id)"
+          />
+        </ul>
+        <p v-else class="empty">No tasks yet. Add something to get started!</p>
 
-    <div class="actions">
-      <button type="button" class="secondary-btn" @click="markAll(true)" :disabled="!todoList.length">
-        Mark all complete
-      </button>
-      <button type="button" class="secondary-btn" @click="markAll(false)" :disabled="!todoList.length">
-        Reset all
-      </button>
-      <button
-        type="button"
-        class="secondary-btn"
-        @click="clearCompleted"
-        :disabled="completed === 0"
-      >
-        Clear completed
-      </button>
-    </div>
+        <div class="card-footer">
+          <div class="tip">
+            <p class="label">Quick tip</p>
+            <p class="muted">Double-click a task to edit it. Use the check to mark it done.</p>
+          </div>
+          <div class="actions">
+            <button type="button" class="ghost" @click="markAll(true)" :disabled="!todoList.length">
+              Mark all complete
+            </button>
+            <button type="button" class="ghost" @click="markAll(false)" :disabled="!todoList.length">
+              Reset all
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card completed-card">
+        <header class="card-header">
+          <div>
+            <p class="label">Completed</p>
+            <h2>{{ completedCount }} tasks finished</h2>
+          </div>
+          <button type="button" class="ghost" @click="clearCompleted" :disabled="completedCount === 0">
+            Clear completed
+          </button>
+        </header>
+
+        <ul v-if="completedTodos.length" class="todo-list completed" aria-live="polite">
+          <TodoItem
+            v-for="todo in completedTodos"
+            :key="todo.id"
+            :modelValue="todo"
+            @update:modelValue="updateTodo"
+            @delete="deleteTodo(todo.id)"
+          />
+        </ul>
+        <p v-else class="empty">No completed tasks yet. Check items off to see them here.</p>
+      </article>
+    </section>
   </main>
 </template>
 
@@ -69,14 +119,7 @@ import { computed, ref, watch } from 'vue'
 import TodoItem from './components/TodoItem.vue'
 
 const draft = ref('')
-const filter = ref('all')
 const todoList = ref(loadTodos())
-
-const filters = [
-  { label: 'All', value: 'all' },
-  { label: 'Active', value: 'active' },
-  { label: 'Completed', value: 'completed' },
-]
 
 function loadTodos() {
   const saved = localStorage.getItem('todos')
@@ -127,14 +170,16 @@ const deleteTodo = (id) => {
   }
 }
 
-const filteredTodos = computed(() => {
-  if (filter.value === 'active') return todoList.value.filter((todo) => !todo.completed)
-  if (filter.value === 'completed') return todoList.value.filter((todo) => todo.completed)
-  return todoList.value
-})
+const activeTodos = computed(() => todoList.value.filter((todo) => !todo.completed))
+const completedTodos = computed(() => todoList.value.filter((todo) => todo.completed))
 
-const completed = computed(() => todoList.value.filter((todo) => todo.completed).length)
-const remaining = computed(() => todoList.value.length - completed.value)
+const completedCount = computed(() => completedTodos.value.length)
+const remaining = computed(() => activeTodos.value.length)
+const total = computed(() => todoList.value.length)
+const progress = computed(() => {
+  if (total.value === 0) return 0
+  return Math.round((completedCount.value / total.value) * 100)
+})
 
 const clearCompleted = () => {
   const next = todoList.value.filter((todo) => !todo.completed)

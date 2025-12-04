@@ -15,14 +15,14 @@
         @blur="save"
         @keyup.esc="cancel"
       />
-      <span v-else>{{ modelValue.text }}</span>
+      <p v-else class="text">{{ modelValue.text }}</p>
     </div>
 
     <div class="actions">
-      <button type="button" class="edit" @click="toggleEditing" :aria-pressed="editing">
+      <button type="button" class="chip" @click="toggleEditing" :aria-pressed="editing">
         {{ editing ? 'Save' : 'Edit' }}
       </button>
-      <button class="delete" type="button" @click="$emit('delete')" aria-label="Delete task">✕</button>
+      <button class="chip danger" type="button" @click="$emit('delete')" aria-label="Delete task">Delete</button>
     </div>
   </li>
 </template>
@@ -95,16 +95,17 @@ const onToggle = () => {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
   transition: transform 0.08s ease, border 0.15s ease, box-shadow 0.2s ease;
 }
 
 .todo:hover {
   transform: translateY(-1px);
   border-color: #cbd5e1;
-  box-shadow: 0 8px 20px rgba(148, 163, 184, 0.2);
+  box-shadow: 0 12px 26px rgba(148, 163, 184, 0.28);
 }
 
 .checkbox {
@@ -133,12 +134,12 @@ const onToggle = () => {
 }
 
 .todo.completed .checkbox {
-  border-color: #4f46e5;
-  background: #eef2ff;
+  border-color: #22c55e;
+  background: #ecfdf3;
 }
 
 .todo.completed .checkbox span {
-  background: #4f46e5;
+  background: #22c55e;
 }
 
 .content {
@@ -146,7 +147,11 @@ const onToggle = () => {
   color: #0f172a;
 }
 
-.todo.completed .content span {
+.text {
+  margin: 0;
+}
+
+.todo.completed .text {
   color: #94a3b8;
   text-decoration: line-through;
 }
@@ -166,26 +171,33 @@ const onToggle = () => {
   gap: 6px;
 }
 
-.edit,
-.delete {
-  border: none;
-  background: transparent;
+.chip {
+  border: 1px solid #e2e8f0;
+  background: white;
   cursor: pointer;
   font-size: 14px;
-  color: #475569;
-  transition: color 0.15s ease, transform 0.1s ease, background 0.15s ease;
-  padding: 8px 10px;
+  color: #0f172a;
+  transition: color 0.15s ease, transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+  padding: 8px 12px;
   border-radius: 10px;
+  font-weight: 600;
 }
 
-.edit:hover {
-  color: #4f46e5;
-  background: #eef2ff;
+.chip:hover {
+  color: #2563eb;
+  border-color: #bfdbfe;
+  background: #f8fafc;
 }
 
-.delete:hover {
-  color: #ef4444;
-  transform: scale(1.05);
-  background: #fef2f2;
+.chip.danger {
+  color: #b91c1c;
+  border-color: #fecdd3;
+  background: #fff1f2;
+}
+
+.chip.danger:hover {
+  color: #991b1b;
+  border-color: #fecdd3;
+  background: #ffe4e6;
 }
 </style>
