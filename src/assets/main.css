@@ -35,6 +35,20 @@
   font-size: 14px;
 }
 
+.badge.stack {
+  margin-bottom: 1px;
+}
+
+.author {
+  text-align: end;
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 8px;
+  margin-right: 8px;
+  position: relative;
+}
+
 .form {
   display: flex;
   flex-direction: column;
